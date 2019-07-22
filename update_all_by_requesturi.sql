@@ -2,7 +2,8 @@
 with data as(
   select
     op.id,
-    ev.auditid
+    ev.requesturi,
+    ev.verb
   from
     api_operations op,
     audit_events ev
@@ -23,13 +24,13 @@ update
   audit_events ev
 set
   opid = (
-    select
+    select distinct
       d.id
     from
       data d
     where
-      d.auditid = ev.auditid
-    limit 1
+      d.requesturi = ev.requesturi
+      and d.verb = ev.verb
   )
 where
   ev.opid is null
@@ -39,20 +40,7 @@ where
     from
       data d
     where
-      d.auditid = ev.auditid
+      d.requesturi = ev.requesturi
+      and d.verb = ev.verb
   ) >= 1 
 ;
--- select * from data;
-/*select 
- d.auditid,
- d.id
-from
-  audit_events ae,
-  data d
-where
-  d.opid is null
-  and ae.auditid = d.auditid
-order by
-  d.auditid,
-  d.id
-;*/
