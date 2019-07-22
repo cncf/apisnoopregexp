@@ -2,13 +2,7 @@
 with data as(
   select
     op.id,
-    op.method,
-    op.path,
-    op.regexp,
-    ev.auditid,
-    ev.opid,
-    ev.verb,
-    ev.requesturi
+    ev.auditid
   from
     api_operations op,
     audit_events ev
@@ -23,7 +17,7 @@ with data as(
       or (op.method = 'watch' and ev.verb in ('watch', 'watchlist'))
     )
     and ev.requesturi ~ op.regexp
-  -- limit 40
+  -- limit 1000
 )
 update
   audit_events ev
