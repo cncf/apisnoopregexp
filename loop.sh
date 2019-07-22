@@ -5,6 +5,7 @@ do
   echo "Found|NotFound: $res"
   echo "Processing next 500..."
   res=''
+  # sudo -u postgres psql hh -tA < update_by_requesturi.sql > out
   sudo -u postgres psql hh -tAc "`cat update_by_requesturi.sql`" > out
   res=`cat out`
   if [ -z "$res" ]

@@ -82,14 +82,24 @@ func generateSQL(con *sql.DB) error {
 		)
 		requesturi := ""
 		verb := ""
-		sql := "update audit_events set opid = '" + opid + "' where ("
+		sqlRoot := "update audit_events set opid = '" + opid + "' where ("
+		sql := sqlRoot
+		args := 0
 		for rs.Next() {
 			fatalOnError(rs.Scan(&requesturi, &verb))
-			opids = append(opids, opid)
 			sql += "(requesturi = '" + requesturi + "' and verb = '" + verb + "') or "
+			args++
+			if args == 500 {
+				sql = sql[:len(sql)-4] + ");"
+				fmt.Printf("%s\n", sql)
+				sql = sqlRoot
+				args = 0
+			}
 		}
-		sql = sql[:len(sql)-4] + ");"
-		fmt.Printf("%s\n", sql)
+		if args > 0 {
+			sql = sql[:len(sql)-4] + ");"
+			fmt.Printf("%s\n", sql)
+		}
 		fatalOnError(rs.Err())
 		fatalOnError(rs.Close())
 	}
