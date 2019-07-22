@@ -4,9 +4,15 @@ do
   res=`sudo -u postgres psql hh -tAc 'select count(distinct (requesturi || verb)) filter (where opid is not null) as found, count(distinct (requesturi || verb)) filter (where opid is null) as not_found from audit_events'`
   echo "Found|NotFound: $res"
   echo "Processing next 100..."
-  # res=`sudo -u postgres psql hh -tAc "update audit_events set opid = 'xxx' where requesturi = 'yyy'"`
-  res=`sudo -u postgres psql hh -tAc "`cat update_by_requesturi.sql`"`
-  echo "Updated: $res"
+  res=''
+  sudo -u postgres psql hh -tAc "`cat update_by_requesturi.sql`" > out
+  res=`cat out`
+  if [ -z "$res" ]
+  then
+    echo "Error: no results, exiting"
+    exit 1
+  fi
+  echo "$res"
   if [ "$res" = "UPDATE 0" ]
   then
     echo "Finished."

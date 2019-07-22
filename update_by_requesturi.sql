@@ -1,6 +1,6 @@
 -- this matches distinct requesturis and verbs and then populate this on the corresponing auditids
 -- so this can update a lot of audits that share the same requesturi and verb - this is the most useful option IMHO
-with data as(
+with data as (
   select distinct
     op.id,
     ev.requesturi,
@@ -20,8 +20,10 @@ with data as(
     )
     and ev.requesturi ~ op.regexp
   limit
-    100
+    3
 )
+select * from data;
+/*
 update
   audit_events ev
 set
@@ -47,4 +49,4 @@ where
       d.requesturi = ev.requesturi
       and d.verb = ev.verb
   ) >= 1 
-;
+;*/

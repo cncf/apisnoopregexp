@@ -20,7 +20,7 @@ with data as(
     )
     and ev.requesturi ~ op.regexp
   limit
-    100
+    3
 )
 update
   audit_events ev
