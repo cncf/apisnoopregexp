@@ -2,7 +2,7 @@ update
   audit_events e
 set
   opid = (
-    select distinct
+    select
       i.opid
     from
       audit_events i
@@ -10,6 +10,8 @@ set
       i.requesturi = e.requesturi
       and i.verb = e.verb
       and i.opid is not null
+    limit
+      1
   )
 where
   e.opid is null

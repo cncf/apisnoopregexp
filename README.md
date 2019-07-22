@@ -12,6 +12,7 @@
 
 # Update OpID via Regexp
 
-- Run: `sudo -u postgres psql hh -c "`cat update_all.sql`"` to update 1000 entries on `audit_events` table (localize each request URI's matching `api_operations` `OpID`.
-- Run: `sudo -u postgres psql hh -c "`cat update_same_requesturi.sql`"` to update all entries with `requesturi` that already have `OpID` identified in `audit_events` table.
+- Run: `sudo -u postgres psql hh -c "`cat update_all_by_auditid.sql`"` to update 1000 `auditid` entries on `audit_events` table (localize each request URI's matching `api_operations` `OpID`).
+- Run: `sudo -u postgres psql hh -c "`cat update_all_by_request.sql`"` to update 1000 `requesturi`/`verb` entries on `audit_events` table (localize each request URI's matching `api_operations` `OpID`).
+- Run: `sudo -u postgres psql hh -c "`cat update_same_requesturi.sql`"` to update all entries with `requesturi`/`verb` that already have `OpID` identified in `audit_events` table (not using regexp matching).
 - Run: `sudo -u postgres psql hh -c "`cat update_single.sql`"` to update single entry in `audit_events` table, replace hardcoded `8f0ef08b-01e5-47e0-8692-b14bf7754235` in `update_single.sql` file.

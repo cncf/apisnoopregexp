@@ -1,4 +1,35 @@
--- update audit_events set opid = null where opid is not null;
+-- first try to update record by finding another record with the same 'requesturi' and 'verb' fields
+update
+  audit_events e
+set
+  opid = (
+    select
+      i.opid
+    from
+      audit_events i
+    where
+      i.requesturi = e.requesturi
+      and i.verb = e.verb
+      and i.opid is not null
+    limit
+      1
+  )
+where
+  e.opid is null
+  and e.auditid = '8f0ef08b-01e5-47e0-8692-b14bf7754235'
+  and (
+    select
+      count(*)
+    from
+      audit_events i
+    where
+      i.requesturi = e.requesturi
+      and i.verb = e.verb
+      and i.opid is not null
+  ) >= 1
+;
+-- if previous operation success then 'opid' is non-null and next operations do nothing
+-- now try to update by matching requesturi with regexp and method-verb mapping
 with data as(
   select
     op.id,
@@ -40,5 +71,5 @@ where
       data d
     where
       d.auditid = ev.auditid
-  ) >= 1 
+  ) >= 1
 ;

@@ -1,6 +1,6 @@
 -- update audit_events set opid = null where opid is not null;
 with data as(
-  select
+  select distinct
     op.id,
     ev.requesturi,
     ev.verb
@@ -18,19 +18,22 @@ with data as(
       or (op.method = 'watch' and ev.verb in ('watch', 'watchlist'))
     )
     and ev.requesturi ~ op.regexp
-  limit 1000
+  limit
+    100
 )
 update
   audit_events ev
 set
   opid = (
-    select distinct
+    select
       d.id
     from
       data d
     where
       d.requesturi = ev.requesturi
       and d.verb = ev.verb
+    limit
+      1
   )
 where
   ev.opid is null
