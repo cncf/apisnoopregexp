@@ -16,6 +16,7 @@ Note that all mass update script only update records with `null` on `opid`, so t
 
 - Run: `sudo -u postgres psql hh -c "`cat update_by_requesturi.sql`"` to update 1000 `requesturi`/`verb` entries on `audit_events` table (localize each request URI's matching `api_operations` `OpID`).
 - Run: `sudo -u postgres psql hh -c "`cat update_single.sql`"` to update single entry in `audit_events` table, replace hardcoded `8f0ef08b-01e5-47e0-8692-b14bf7754235` in `update_single.sql` file.
+- You can runn  `./loop.sh` script to add regexp matching in 100 elements packs one by one until no more updates is made (they're packs of 100 different `requesturi`/`verb` packs). There are about 720 such packs.
 
 
 # Different approach
