@@ -1,4 +1,6 @@
+-- To rollback all updates
 -- update audit_events set opid = null where opid is not null;
+-- updates using auditid (becauser there are much more auditids than requesturis and verbs, you shoudl run update_same_requesturi.sql after this)
 with data as(
   select distinct
     op.id,
@@ -17,7 +19,8 @@ with data as(
       or (op.method = 'watch' and ev.verb in ('watch', 'watchlist'))
     )
     and ev.requesturi ~ op.regexp
-  limit 100
+  limit
+    100
 )
 update
   audit_events ev
@@ -29,7 +32,8 @@ set
       data d
     where
       d.auditid = ev.auditid
-    limit 1
+    limit
+      1
   )
 where
   ev.opid is null
