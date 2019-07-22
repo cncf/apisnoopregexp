@@ -88,7 +88,7 @@ func generateSQL(con *sql.DB) error {
 			opids = append(opids, opid)
 			sql += "(requesturi = '" + requesturi + "' and verb = '" + verb + "') or "
 		}
-		sql = sql[:len(sql)-4] + ")"
+		sql = sql[:len(sql)-4] + ");"
 		fmt.Printf("%s\n", sql)
 		fatalOnError(rs.Err())
 		fatalOnError(rs.Close())

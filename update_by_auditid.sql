@@ -1,8 +1,8 @@
 -- To rollback all updates
 -- update audit_events set opid = null where opid is not null;
 -- updates using auditid (becauser there are much more auditids than requesturis and verbs, you shoudl run update_same_requesturi.sql after this)
-with data as(
-  select distinct
+with ndata as (
+  select
     op.id,
     ev.auditid
   from
@@ -20,7 +20,9 @@ with data as(
     )
     and ev.requesturi ~ op.regexp
   limit
-    3
+    100
+), data as (
+  select distinct * from ndata
 )
 update
   audit_events ev
