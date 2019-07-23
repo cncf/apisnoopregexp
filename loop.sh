@@ -13,6 +13,9 @@ else
   n=$1
 fi
 echo "$fn"
+# cp update_by_auditid.sql "$fn"
+cp update_by_requesturi.sql "$fn"
+vim --not-a-term -c "%s/NNN/${n}/g" -c 'wq!' "$fn"
 while true
 do
   if [ -z "$NOINF" ]
@@ -21,9 +24,6 @@ do
     echo "Found|NotFound: $res"
   fi
   echo "Processing next $n..."
-  # cp update_by_auditid.sql "$fn"
-  cp update_by_requesturi.sql "$fn"
-  vim --not-a-term -c "%s/NNN/${n}/g" -c 'wq!' "$fn"
   sudo -u postgres psql hh -tAc "`cat $fn`" > out
   res=`cat out`
   if [ -z "$res" ]
