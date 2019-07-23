@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"os"
 	"regexp"
 	"runtime"
 	"sync"
@@ -201,7 +202,10 @@ func rmatchSQL(con *sql.DB) error {
 func main() {
 	// sudo -u postgres ./gensql
 	// psql "host=/var/run/postgresql user=postgres dbname=hh sslmode=disable password=''"
-	connectionString := lib.ConnStr
+	connectionString := os.Getenv("CONN")
+	if connectionString == "" {
+		connectionString = lib.ConnStr
+	}
 	con, err := sql.Open("postgres", connectionString)
 	lib.FatalOnError(err)
 	lib.FatalOnError(rmatchSQL(con))
