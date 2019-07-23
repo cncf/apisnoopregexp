@@ -12,6 +12,8 @@ import (
 )
 
 func rmatchSQL(con *sql.DB) error {
+	// Set to true to have verbose output
+	dbg := false
 	// Distinct request URIs
 	rows := lib.QuerySQLWithErr(
 		con,
@@ -114,6 +116,58 @@ func rmatchSQL(con *sql.DB) error {
 			}
 			lib.FatalOnError(rs.Err())
 			lib.FatalOnError(rs.Close())
+			if dbg && len(ms) < 1 {
+				fmt.Printf("No matches: uri:%s -> verbs:%+v, matches:%d\n", uri, verbs, len(ms))
+			}
+			if len(verbs) < 1 {
+				fmt.Printf("No verbs: uri:%s -> verbs:%+v, matches:%d\n", uri, verbs, len(ms))
+			}
+			for _, verb := range verbs {
+				method := ""
+				if verb == lib.Get || verb == "list" || verb == "proxy" {
+					method = lib.Get
+				} else if verb == lib.Patch {
+					method = lib.Patch
+				} else if verb == "update" {
+					method = "put"
+				} else if verb == "create" {
+					method = "post"
+				} else if verb == lib.Delete || verb == "deletecollection" {
+					method = lib.Delete
+				} else if verb == lib.Watch || verb == "watchlist" {
+					method = lib.Watch
+				} else {
+					fmt.Printf("WARNING: unknown verb:%s for uri:%s\n", verb, uri)
+					continue
+				}
+				//fmt.Printf("uri:%s: verb:%s -> method:%s\n", uri, verb, method)
+				aids := []string{}
+				for _, ma := range ms {
+					rs2 := lib.QuerySQLWithErr(
+						con,
+						fmt.Sprintf(
+							"select id from api_operations where method = $1 and regexp = $2",
+						),
+						method,
+						rmap[ma],
+					)
+					id := ""
+					ids := []string{}
+					for rs2.Next() {
+						lib.FatalOnError(rs2.Scan(&id))
+						ids = append(ids, id)
+						aids = append(aids, id)
+					}
+					lib.FatalOnError(rs2.Err())
+					lib.FatalOnError(rs2.Close())
+					//fmt.Printf("uri:%s: verb:%s method:%s regexp:%s -> ids:%+v\n", uri, verb, method, rmap[ma], ids)
+					//fmt.Printf("verb:%s method:%s regexp:%s -> ids:%+v\n", verb, method, rmap[ma], ids)
+				}
+				//fmt.Printf("verb:%s method:%s -> ids:%+v\n", verb, method, aids)
+				if dbg && len(aids) < 1 {
+					fmt.Printf("uri:%s verb:%s method:%s regexps:%+v -> ids:%+v\n", uri, verb, method, ms, aids)
+				}
+			}
 			c <- struct{}{}
 		}(ch, u, m)
 		nThreads++

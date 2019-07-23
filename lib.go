@@ -14,6 +14,18 @@ import (
 // ConnStr - postgres connection string (using socket mode)
 const ConnStr string = "client_encoding=UTF8 sslmode=disable host=/var/run/postgresql port=5432 dbname=hh user=postgres password=''"
 
+// Get - get
+const Get string = "get"
+
+// Delete - delete
+const Delete string = "delete"
+
+// Watch - watch
+const Watch string = "watch"
+
+// Patch - patch
+const Patch string = "patch"
+
 /* for TCP mode
 const ConnStr string = "client_encoding=UTF8 sslmode=disable host=localhost port=5432 dbname=hh user=postgres password=pwd"
 */
