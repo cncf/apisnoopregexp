@@ -20,7 +20,7 @@ with ndata as (
     )
     and ev.requesturi ~ op.regexp
   limit
-    1000
+    NNN
 ), data as (
   select distinct * from ndata
 )
