@@ -31,7 +31,8 @@ create table audit_events(
   responsespec       jsonb not null,
   responsestatus     jsonb not null,
   request_ts         timestamp with time zone, --new
-  stage_ts           timestamp with time zone --new
+  stage_ts           timestamp with time zone, --new
+  primary key(audit_id, stage)
 );
 
 -- Indexes
