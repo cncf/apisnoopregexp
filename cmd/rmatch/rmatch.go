@@ -8,52 +8,22 @@ import (
 	_ "github.com/lib/pq" // As suggested by lib/pq driver
 )
 
-func generateSQL(con *sql.DB) error {
+func rmatchSQL(con *sql.DB) error {
 	rows := lib.QuerySQLWithErr(
 		con,
 		fmt.Sprintf(
-			"select distinct op_id from audit_events where op_id is not null order by op_id",
+			"select distinct request_uri from audit_events",
 		),
 	)
 	defer func() { lib.FatalOnError(rows.Close()) }()
-	opid := ""
-	opids := []string{}
+	uri := ""
+	uris := []string{}
 	for rows.Next() {
-		lib.FatalOnError(rows.Scan(&opid))
-		opids = append(opids, opid)
+		lib.FatalOnError(rows.Scan(&uri))
+		uris = append(uris, uri)
 	}
 	lib.FatalOnError(rows.Err())
-	for _, opid := range opids {
-		rs := lib.QuerySQLWithErr(
-			con,
-			fmt.Sprintf(
-				"select distinct request_uri, verb from audit_events where op_id = $1",
-			),
-			opid,
-		)
-		requesturi := ""
-		verb := ""
-		sqlRoot := "update audit_events set op_id = '" + opid + "' where ("
-		sql := sqlRoot
-		args := 0
-		for rs.Next() {
-			lib.FatalOnError(rs.Scan(&requesturi, &verb))
-			sql += "(request_uri = '" + requesturi + "' and verb = '" + verb + "') or "
-			args++
-			if args == 500 {
-				sql = sql[:len(sql)-4] + ");"
-				fmt.Printf("%s\n", sql)
-				sql = sqlRoot
-				args = 0
-			}
-		}
-		if args > 0 {
-			sql = sql[:len(sql)-4] + ");"
-			fmt.Printf("%s\n", sql)
-		}
-		lib.FatalOnError(rs.Err())
-		lib.FatalOnError(rs.Close())
-	}
+	fmt.Printf("URIs(%d): %+v\n", len(uris), uris)
 	return nil
 }
 
@@ -63,5 +33,5 @@ func main() {
 	connectionString := lib.ConnStr
 	con, err := sql.Open("postgres", connectionString)
 	lib.FatalOnError(err)
-	lib.FatalOnError(generateSQL(con))
+	lib.FatalOnError(rmatchSQL(con))
 }

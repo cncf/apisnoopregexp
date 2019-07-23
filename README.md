@@ -24,6 +24,7 @@ Note that all mass update script only update records with `null` on `opid`, so t
 - Dump `api_operations` table data into a local TSV file: `sudo -u postgres psql hh -tAc "\copy (select * from api_operations) to '/tmp/new_api_operations.tsv'"`.
 - Dump `audit_events` table data into a local TSV file: `sudo -u postgres psql hh -tAc "\copy (select * from audit_events) to '/tmp/new_audit_events.tsv'"`.
 - Generate SQL file to be run on the original database: `make`, `sudo -u postgres ./gensql > update.sql`.
+- Generate SQL regexp match file: `make`, `sudo -u postgres ./rmatch > rmatch.sql`.
 - Run script on the original database: `` psql -h apisnoop-db-host -U apisnoop-db-user hh < update.sql ``.
 
 
