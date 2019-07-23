@@ -13,12 +13,12 @@
 # Update OpID via Regexp
 
 Note that all mass update script only update records with `null` on `opid`, so they can be called iteratively.
-- Run: `make`, `sudo -u postgres ./rmatch`. That will update `op_id` column on `audit_events` table.
+- Run: `make`, `time sudo -u postgres ./rmatch`. That will update `op_id` column on `audit_events` table.
 
 
 # Restore into the original database
 
-- Generate SQL file to be run on the original database: `make`, `sudo -u postgres ./gensql > update.sql`.
+- Generate SQL file to be run on the original database: `make`, `time sudo -u postgres ./gensql > update.sql`.
 - Run script on the original database: `` psql -h apisnoop-db-host -U apisnoop-db-user hh < update.sql ``.
 
 You can also generate TSV dumps from your local databae and restore them on the remote, but the above solution is faster and better
