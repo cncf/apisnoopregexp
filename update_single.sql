@@ -1,44 +1,44 @@
--- first try to update record by finding another record with the same 'requesturi' and 'verb' fields
+-- first try to update record by finding another record with the same 'request_uri' and 'verb' fields
 update
   audit_events e
 set
-  opid = (
+  op_id = (
     select
-      i.opid
+      i.op_id
     from
       audit_events i
     where
-      i.requesturi = e.requesturi
+      i.request_uri = e.request_uri
       and i.verb = e.verb
-      and i.opid is not null
+      and i.op_id is not null
     limit
       1
   )
 where
-  e.opid is null
-  and e.auditid = '8f0ef08b-01e5-47e0-8692-b14bf7754235'
+  e.op_id is null
+  and e.audit_id = '8f0ef08b-01e5-47e0-8692-b14bf7754235'
   and (
     select
       count(*)
     from
       audit_events i
     where
-      i.requesturi = e.requesturi
+      i.request_uri = e.request_uri
       and i.verb = e.verb
-      and i.opid is not null
+      and i.op_id is not null
   ) >= 1
 ;
--- if previous operation success then 'opid' is non-null and next operations do nothing
--- now try to update by matching requesturi with regexp and method-verb mapping
+-- if previous operation success then 'op_id' is non-null and next operations do nothing
+-- now try to update by matching request_uri with regexp and method-verb mapping
 with data as(
   select
     op.id,
-    ev.auditid
+    ev.audit_id
   from
     api_operations op,
     audit_events ev
   where
-    ev.opid is null
+    ev.op_id is null
     and (
       (op.method = 'get' and ev.verb in ('get', 'list', 'proxy'))
       or (op.method = 'patch' and ev.verb = 'patch')
@@ -47,29 +47,29 @@ with data as(
       or (op.method = 'delete' and ev.verb in ('delete', 'deletecollection'))
       or (op.method = 'watch' and ev.verb in ('watch', 'watchlist'))
     )
-    and ev.requesturi ~ op.regexp
-    and ev.auditid = '8f0ef08b-01e5-47e0-8692-b14bf7754235'
+    and ev.request_uri ~ op.regexp
+    and ev.audit_id = '8f0ef08b-01e5-47e0-8692-b14bf7754235'
 )
 update
   audit_events ev
 set
-  opid = (
+  op_id = (
     select
       d.id
     from
       data d
     where
-      d.auditid = ev.auditid
+      d.audit_id = ev.audit_id
     limit 1
   )
 where
-  ev.opid is null
+  ev.op_id is null
   and (
     select
       count(*)
     from
       data d
     where
-      d.auditid = ev.auditid
+      d.audit_id = ev.audit_id
   ) >= 1
 ;

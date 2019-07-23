@@ -1,15 +1,15 @@
 -- To rollback all updates
--- update audit_events set opid = null where opid is not null;
--- updates using auditid (becauser there are much more auditids than requesturis and verbs, you shoudl run update_same_requesturi.sql after this)
+-- update audit_events set op_id = null where op_id is not null;
+-- updates using audit_id (because there are much more audit_ids than request_uris and verbs, you shoudl run update_same_requesturi.sql after this)
 with ndata as (
   select
     op.id,
-    ev.auditid
+    ev.audit_id
   from
     api_operations op,
     audit_events ev
   where
-    ev.opid is null
+    ev.op_id is null
     and (
       (op.method = 'get' and ev.verb in ('get', 'list', 'proxy'))
       or (op.method = 'patch' and ev.verb = 'patch')
@@ -18,7 +18,7 @@ with ndata as (
       or (op.method = 'delete' and ev.verb in ('delete', 'deletecollection'))
       or (op.method = 'watch' and ev.verb in ('watch', 'watchlist'))
     )
-    and ev.requesturi ~ op.regexp
+    and ev.request_uri ~ op.regexp
   limit
     NNN
 ), data as (
@@ -27,38 +27,38 @@ with ndata as (
 update
   audit_events ev
 set
-  opid = (
+  op_id = (
     select
       d.id
     from
       data d
     where
-      d.auditid = ev.auditid
+      d.audit_id = ev.audit_id
     limit
       1
   )
 where
-  ev.opid is null
+  ev.op_id is null
   and (
     select
       count(*)
     from
       data d
     where
-      d.auditid = ev.auditid
+      d.audit_id = ev.audit_id
   ) >= 1 
 ;
 -- select * from data;
 /*select 
- d.auditid,
+ d.audit_id,
  d.id
 from
   audit_events ae,
   data d
 where
-  d.opid is null
-  and ae.auditid = d.auditid
+  d.op_id is null
+  and ae.audit_id = d.audit_id
 order by
-  d.auditid,
+  d.audit_id,
   d.id
 ;*/
