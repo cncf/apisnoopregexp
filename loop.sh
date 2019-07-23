@@ -20,7 +20,7 @@ while true
 do
   if [ -z "$NOINF" ]
   then
-    res=`sudo -u postgres psql hh -tAc 'select count(distinct (requesturi || verb)) filter (where opid is not null) as found, count(distinct (requesturi || verb)) filter (where opid is null) as not_found from audit_events'`
+    res=`sudo -u postgres psql hh -tAc 'select count(distinct (request_uri || verb)) filter (where op_id is not null) as found, count(distinct (request_uri || verb)) filter (where op_id is null) as not_found from audit_events'`
     echo "Found|NotFound: $res"
   fi
   echo "Processing next $n..."
