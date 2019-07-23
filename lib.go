@@ -80,3 +80,23 @@ func QuerySQLWithErr(con *sql.DB, query string, args ...interface{}) *sql.Rows {
 	FatalOnError(err)
 	return res
 }
+
+// ExecSQL executes given SQL on Postgres DB (and return single state result, that doesn't need to be closed)
+func ExecSQL(con *sql.DB, query string, args ...interface{}) (sql.Result, error) {
+	return con.Exec(query, args...)
+}
+
+// ExecSQLWithErr wrapper to ExecSQL that exists on error
+func ExecSQLWithErr(con *sql.DB, query string, args ...interface{}) sql.Result {
+	// Try to handle "too many connections" error
+	var (
+		res sql.Result
+		err error
+	)
+	res, err = ExecSQL(con, query, args...)
+	if err != nil {
+		QueryOut(query, args...)
+	}
+	FatalOnError(err)
+	return res
+}

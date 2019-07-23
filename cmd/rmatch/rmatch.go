@@ -17,9 +17,7 @@ func rmatchSQL(con *sql.DB) error {
 	// Distinct request URIs
 	rows := lib.QuerySQLWithErr(
 		con,
-		fmt.Sprintf(
-			"select distinct request_uri from audit_events where op_id is null",
-		),
+		"select distinct request_uri from audit_events where op_id is null",
 	)
 	defer func() { lib.FatalOnError(rows.Close()) }()
 	uri := ""
@@ -34,9 +32,7 @@ func rmatchSQL(con *sql.DB) error {
 	// Distinct regexps
 	rows = lib.QuerySQLWithErr(
 		con,
-		fmt.Sprintf(
-			"select distinct regexp from api_operations",
-		),
+		"select distinct regexp from api_operations",
 	)
 	defer func() { lib.FatalOnError(rows.Close()) }()
 	re := ""
@@ -99,13 +95,12 @@ func rmatchSQL(con *sql.DB) error {
 	// Now update uris
 	nThreads = 0
 	ch = make(chan struct{})
+	updated := int64(0)
 	for u, m := range matches {
 		go func(c chan struct{}, uri string, ms []*regexp.Regexp) {
 			rs := lib.QuerySQLWithErr(
 				con,
-				fmt.Sprintf(
-					"select distinct verb from audit_events where op_id is null and request_uri = $1",
-				),
+				"select distinct verb from audit_events where op_id is null and request_uri = $1",
 				uri,
 			)
 			verb := ""
@@ -145,9 +140,7 @@ func rmatchSQL(con *sql.DB) error {
 				for _, ma := range ms {
 					rs2 := lib.QuerySQLWithErr(
 						con,
-						fmt.Sprintf(
-							"select id from api_operations where method = $1 and regexp = $2",
-						),
+						"select id from api_operations where method = $1 and regexp = $2",
 						method,
 						rmap[ma],
 					)
@@ -164,8 +157,29 @@ func rmatchSQL(con *sql.DB) error {
 					//fmt.Printf("verb:%s method:%s regexp:%s -> ids:%+v\n", verb, method, rmap[ma], ids)
 				}
 				//fmt.Printf("verb:%s method:%s -> ids:%+v\n", verb, method, aids)
-				if dbg && len(aids) < 1 {
-					fmt.Printf("uri:%s verb:%s method:%s regexps:%+v -> ids:%+v\n", uri, verb, method, ms, aids)
+				la := len(aids)
+				if la < 1 {
+					if dbg {
+						fmt.Printf("No IDs found: uri:%s verb:%s method:%s regexps:%+v -> ids:%+v\n", uri, verb, method, ms, aids)
+					}
+				} else {
+					if la > 1 {
+						fmt.Printf("Multiple IDs found: uri:%s verb:%s method:%s regexps:%+v -> ids:%+v\n", uri, verb, method, ms, aids)
+					}
+					rt := lib.ExecSQLWithErr(
+						con,
+						"update audit_events set op_id = $1 where request_uri = $2 and verb = $3",
+						aids[0],
+						uri,
+						verb,
+					)
+					cnt, e := rt.RowsAffected()
+					lib.FatalOnError(e)
+					if cnt > 0 {
+						mut.Lock()
+						updated += cnt
+						mut.Unlock()
+					}
 				}
 			}
 			c <- struct{}{}
@@ -180,7 +194,7 @@ func rmatchSQL(con *sql.DB) error {
 		<-ch
 		nThreads--
 	}
-	fmt.Printf("Done\n")
+	fmt.Printf("Done, updated %d rows\n", updated)
 	return nil
 }
 
