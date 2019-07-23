@@ -2,3 +2,4 @@
 *.swp
 /gensql
 /out
+/access.txt

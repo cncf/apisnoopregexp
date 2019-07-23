@@ -11,14 +11,15 @@ create table api_operations(
 );
 
 create table audit_events(
-  auditID            uuid,
-  testrunID          text,
-  opID               text,
+  audit_id           uuid, -- changed
+  testrun_id         text, --changed
+  op_id              text, -- changed
+  stage              text not null, -- new
   level              text not null,
   verb               text not null,
-  requestURI         text not null,
-  userAgent          text,
-  testName           text,
+  request_uri        text not null, -- changed
+  user_agent         text, -- changed
+  test_name          text, -- changed
   requestkind        text not null,
   requestapiversion  text not null,
   requestmeta        jsonb not null,
@@ -29,7 +30,8 @@ create table audit_events(
   responsemeta       jsonb not null,
   responsespec       jsonb not null,
   responsestatus     jsonb not null,
-  timeStamp          timestamp with time zone
+  request_ts         timestamp with time zone, --new
+  stage_ts           timestamp with time zone --new
 );
 
 -- Indexes
@@ -37,6 +39,6 @@ create index api_operations_id on api_operations(id);
 create index api_operations_method on api_operations(method);
 create index api_operations_regexp on api_operations(regexp);
 
-create index audit_events_opid on audit_events(opid);
+create index audit_events_op_id on audit_events(op_id);
 create index audit_events_verb on audit_events(verb);
-create index audit_events_requesturi on audit_events(requesturi);
+create index audit_events_request_uri on audit_events(request_uri);
