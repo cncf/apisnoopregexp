@@ -61,7 +61,7 @@ func generateSQL(con *sql.DB) error {
 	rows := querySQLWithErr(
 		con,
 		fmt.Sprintf(
-			"select distinct opid from audit_events where opid is not null order by opid",
+			"select distinct op_id from audit_events where op_id is not null order by op_id",
 		),
 	)
 	defer func() { fatalOnError(rows.Close()) }()
@@ -76,18 +76,18 @@ func generateSQL(con *sql.DB) error {
 		rs := querySQLWithErr(
 			con,
 			fmt.Sprintf(
-				"select distinct requesturi, verb from audit_events where opid = $1",
+				"select distinct request_uri, verb from audit_events where op_id = $1",
 			),
 			opid,
 		)
 		requesturi := ""
 		verb := ""
-		sqlRoot := "update audit_events set opid = '" + opid + "' where ("
+		sqlRoot := "update audit_events set op_id = '" + opid + "' where ("
 		sql := sqlRoot
 		args := 0
 		for rs.Next() {
 			fatalOnError(rs.Scan(&requesturi, &verb))
-			sql += "(requesturi = '" + requesturi + "' and verb = '" + verb + "') or "
+			sql += "(request_uri = '" + requesturi + "' and verb = '" + verb + "') or "
 			args++
 			if args == 500 {
 				sql = sql[:len(sql)-4] + ");"
