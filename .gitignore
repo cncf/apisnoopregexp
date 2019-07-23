@@ -1,5 +1,6 @@
 *.tsv
 *.swp
 /gensql
+/rmatch
 /out
 /access.txt

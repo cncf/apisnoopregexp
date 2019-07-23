@@ -1,5 +1,6 @@
-GO_BIN_FILES=gensql.go
-GO_BIN_CMDS=gensql
+GO_BIN_FILES=lib.go
+GO_BIN_FILES=cmd/gensql/gensql.go cmd/rmatch/rmatch.go
+GO_BIN_CMDS=github.com/cncf/apisnoopregexp/cmd/gensql github.com/cncf/apisnoopregexp/cmd/rmatch
 GO_ENV=CGO_ENABLED=0
 GO_BUILD=go build -ldflags '-s -w'
 GO_INSTALL=go install -ldflags '-s'
@@ -10,13 +11,16 @@ GO_CONST=goconst
 GO_IMPORTS=goimports -w
 GO_USEDEXPORTS=usedexports
 GO_ERRCHECK=errcheck -asserts -ignore '[FS]?[Pp]rint*'
-BINARIES=gensql
+BINARIES=gensql rmatch
 STRIP=strip
 
 all: check ${BINARIES}
 
-gensql: gensql.go
-	 ${GO_ENV} ${GO_BUILD} -o gensql gensql.go
+gensql: cmd/gensql/gensql.go ${GO_LIB_FILES}
+	 ${GO_ENV} ${GO_BUILD} -o gensql cmd/gensql/gensql.go
+
+rmatch: cmd/rmatch/rmatch.go ${GO_LIB_FILES}
+	 ${GO_ENV} ${GO_BUILD} -o rmatch cmd/rmatch/rmatch.go
 
 fmt: ${GO_BIN_FILES}
 	./for_each_go_file.sh "${GO_FMT}"
