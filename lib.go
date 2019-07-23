@@ -11,8 +11,12 @@ import (
 	_ "github.com/lib/pq" // As suggested by lib/pq driver
 )
 
-// ConnStr - postgres connection string
+// ConnStr - postgres connection string (using socket mode)
 const ConnStr string = "client_encoding=UTF8 sslmode=disable host=/var/run/postgresql port=5432 dbname=hh user=postgres password=''"
+
+/* for TCP mode
+const ConnStr string = "client_encoding=UTF8 sslmode=disable host=localhost port=5432 dbname=hh user=postgres password=pwd"
+*/
 
 // FatalOnError - fail on error
 func FatalOnError(err error) {
