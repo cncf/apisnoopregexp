@@ -105,7 +105,7 @@ func rmatchSQL(con *sql.DB) error {
 			lms := len(ms)
 			if lms < 1 {
 				if dbg {
-					fmt.Printf("No matches: uri:%s\n", uri)
+					fmt.Printf("INFO: No matches: uri:%s\n", uri)
 				}
 				c <- struct{}{}
 				return
@@ -124,7 +124,7 @@ func rmatchSQL(con *sql.DB) error {
 			lib.FatalOnError(rs.Err())
 			lib.FatalOnError(rs.Close())
 			if len(verbs) < 1 {
-				fmt.Printf("No verbs: uri:%s matches:%d\n", uri, lms)
+				fmt.Printf("ERROR: No verbs: uri:%s matches:%d\n", uri, lms)
 			}
 			for _, verb := range verbs {
 				method := ""
@@ -146,12 +146,18 @@ func rmatchSQL(con *sql.DB) error {
 				}
 				//fmt.Printf("uri:%s: verb:%s -> method:%s\n", uri, verb, method)
 				aids := []string{}
+				aid := ""
+				lre := 0
 				for _, ma := range ms {
+					// This key must exist, algorithm ensures this, otherwise it would panic here
+					sma := rmap[ma]
+					lsma := len(sma)
+					// There should be at most one
 					rs2 := lib.QuerySQLWithErr(
 						con,
 						"select id from api_operations where method = $1 and regexp = $2",
 						method,
-						rmap[ma],
+						sma,
 					)
 					id := ""
 					ids := []string{}
@@ -159,26 +165,36 @@ func rmatchSQL(con *sql.DB) error {
 						lib.FatalOnError(rs2.Scan(&id))
 						ids = append(ids, id)
 						aids = append(aids, id)
+						if lsma > lre {
+							//if dbg && lre > 0 {
+							if lre > 0 {
+								fmt.Printf("DEBUG: picking longer(%d) regexp:%s instead of shorter(%d):%s", lsma, id, lre, aid)
+							}
+							aid = id
+							lre = lsma
+						}
 					}
 					lib.FatalOnError(rs2.Err())
 					lib.FatalOnError(rs2.Close())
-					//fmt.Printf("uri:%s: verb:%s method:%s regexp:%s -> ids:%+v\n", uri, verb, method, rmap[ma], ids)
-					//fmt.Printf("verb:%s method:%s regexp:%s -> ids:%+v\n", verb, method, rmap[ma], ids)
+					//fmt.Printf("verb:%s method:%s regexp:%s -> ids:%+v\n", verb, method, sma, ids)
+					if len(ids) > 1 {
+						fmt.Printf("ERROR: Multiple method/regexp matches: uri:%s: verb:%s method:%s regexp:%s -> ids:%+v\n", uri, verb, method, sma, ids)
+					}
 				}
 				//fmt.Printf("verb:%s method:%s -> ids:%+v\n", verb, method, aids)
 				la := len(aids)
 				if la < 1 {
 					if dbg {
-						fmt.Printf("No IDs found: uri:%s verb:%s method:%s regexps:%+v -> ids:%+v\n", uri, verb, method, ms, aids)
+						fmt.Printf("INFO: No IDs found: uri:%s verb:%s method:%s regexps:%+v\n", uri, verb, method, ms)
 					}
 				} else {
 					if la > 1 {
-						fmt.Printf("Multiple IDs found: uri:%s verb:%s method:%s regexps:%+v -> ids:%+v\n", uri, verb, method, ms, aids)
+						fmt.Printf("WARNING: Multiple IDs found: uri:%s verb:%s method:%s regexps:%+v -> ids:%+v, picking longest regexp: %s\n", uri, verb, method, ms, aids, aid)
 					}
 					rt := lib.ExecSQLWithErr(
 						con,
 						"update audit_events set op_id = $1 where request_uri = $2 and verb = $3",
-						aids[0],
+						aid,
 						uri,
 						verb,
 					)
