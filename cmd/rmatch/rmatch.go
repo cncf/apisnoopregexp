@@ -64,6 +64,7 @@ func rmatchSQL(con *sql.DB) error {
 					ms = append(ms, re)
 				}
 			}
+			// Bottleneck, but still goes very fast
 			mut.Lock()
 			matches[uri] = ms
 			mut.Unlock()
@@ -95,12 +96,20 @@ func rmatchSQL(con *sql.DB) error {
 		fmt.Printf("Matches data (ideally there should be no misses (0:0) and no multiple matches (>=2:0), only (1:N):\n%+v\n", hist)
 	}
 
-	// Now update uris
+	// Now update op_id
 	nThreads = 0
 	ch = make(chan struct{})
 	updated := int64(0)
 	for u, m := range matches {
 		go func(c chan struct{}, uri string, ms []*regexp.Regexp) {
+			lms := len(ms)
+			if lms < 1 {
+				if dbg {
+					fmt.Printf("No matches: uri:%s\n", uri)
+				}
+				c <- struct{}{}
+				return
+			}
 			rs := lib.QuerySQLWithErr(
 				con,
 				"select distinct verb from audit_events where op_id is null and request_uri = $1",
@@ -114,11 +123,8 @@ func rmatchSQL(con *sql.DB) error {
 			}
 			lib.FatalOnError(rs.Err())
 			lib.FatalOnError(rs.Close())
-			if dbg && len(ms) < 1 {
-				fmt.Printf("No matches: uri:%s -> verbs:%+v, matches:%d\n", uri, verbs, len(ms))
-			}
 			if len(verbs) < 1 {
-				fmt.Printf("No verbs: uri:%s -> verbs:%+v, matches:%d\n", uri, verbs, len(ms))
+				fmt.Printf("No verbs: uri:%s -> verbs:%+v, matches:%d\n", uri, verbs, lms)
 			}
 			for _, verb := range verbs {
 				method := ""
