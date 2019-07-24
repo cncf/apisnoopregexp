@@ -124,21 +124,21 @@ func rmatchSQL(con *sql.DB) error {
 			lib.FatalOnError(rs.Err())
 			lib.FatalOnError(rs.Close())
 			if len(verbs) < 1 {
-				fmt.Printf("No verbs: uri:%s -> verbs:%+v, matches:%d\n", uri, verbs, lms)
+				fmt.Printf("No verbs: uri:%s matches:%d\n", uri, lms)
 			}
 			for _, verb := range verbs {
 				method := ""
-				if verb == lib.Get || verb == "list" || verb == "proxy" {
+				if verb == lib.Get || verb == lib.List || verb == lib.Proxy {
 					method = lib.Get
 				} else if verb == lib.Patch {
 					method = lib.Patch
-				} else if verb == "update" {
-					method = "put"
-				} else if verb == "create" {
-					method = "post"
-				} else if verb == lib.Delete || verb == "deletecollection" {
+				} else if verb == lib.Update {
+					method = lib.Put
+				} else if verb == lib.Create {
+					method = lib.Post
+				} else if verb == lib.Delete || verb == lib.Deletecollection {
 					method = lib.Delete
-				} else if verb == lib.Watch || verb == "watchlist" {
+				} else if verb == lib.Watch || verb == lib.Watchlist {
 					method = lib.Watch
 				} else {
 					fmt.Printf("WARNING: unknown verb:%s for uri:%s\n", verb, uri)

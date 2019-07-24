@@ -18,6 +18,8 @@ const ConnStr string = "client_encoding=UTF8 sslmode=disable host=/var/run/postg
 const ConnStr string = "client_encoding=UTF8 sslmode=disable host=localhost port=5432 dbname=hh user=postgres password=pwd"
 */
 
+// A big stupid code, but goconst issues warnings about multiple strings like "get" should be put in a const variable
+
 // Get - get
 const Get string = "get"
 
@@ -29,6 +31,30 @@ const Watch string = "watch"
 
 // Patch - patch
 const Patch string = "patch"
+
+// Proxy - proxy
+const Proxy string = "proxy"
+
+// List - list
+const List string = "list"
+
+// Update - update
+const Update string = "update"
+
+// Put - put
+const Put string = "put"
+
+// Create - create
+const Create string = "create"
+
+// Post - post
+const Post string = "post"
+
+// Deletecollection - deletecollection
+const Deletecollection string = "deletecollection"
+
+// Watchlist - watchlist
+const Watchlist string = "watchlist"
 
 // FatalOnError - fail on error
 func FatalOnError(err error) {
