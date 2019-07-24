@@ -88,7 +88,7 @@ func rmatchSQL(con *sql.DB) error {
 			l := len(m)
 			v, ok := hist[l]
 			if !ok {
-				hist[l] = 0
+				hist[l] = 1
 			} else {
 				hist[l] = v + 1
 			}
@@ -147,6 +147,7 @@ func rmatchSQL(con *sql.DB) error {
 				//fmt.Printf("uri:%s: verb:%s -> method:%s\n", uri, verb, method)
 				aids := []string{}
 				aid := ""
+				pre := ""
 				lre := 0
 				for _, ma := range ms {
 					// This key must exist, algorithm ensures this, otherwise it would panic here
@@ -166,12 +167,12 @@ func rmatchSQL(con *sql.DB) error {
 						ids = append(ids, id)
 						aids = append(aids, id)
 						if lsma > lre {
-							//if dbg && lre > 0 {
-							if lre > 0 {
-								fmt.Printf("DEBUG: picking longer(%d) regexp:%s instead of shorter(%d):%s", lsma, id, lre, aid)
+							if dbg && lre > 0 {
+								fmt.Printf("DEBUG: picking longer(%d/%s):%s instead of shorter(%d/%s):%s\n", lsma, id, sma, lre, aid, pre)
 							}
 							aid = id
 							lre = lsma
+							pre = sma
 						}
 					}
 					lib.FatalOnError(rs2.Err())
@@ -189,7 +190,7 @@ func rmatchSQL(con *sql.DB) error {
 					}
 				} else {
 					if la > 1 {
-						fmt.Printf("WARNING: Multiple IDs found: uri:%s verb:%s method:%s regexps:%+v -> ids:%+v, picking longest regexp: %s\n", uri, verb, method, ms, aids, aid)
+						fmt.Printf("WARNING: Multiple IDs found: uri:%s verb:%s method:%s regexps:%+v -> ids:%+v, picking longest regexp: (%d/%s):%s\n", uri, verb, method, ms, aids, lre, aid, pre)
 					}
 					rt := lib.ExecSQLWithErr(
 						con,
