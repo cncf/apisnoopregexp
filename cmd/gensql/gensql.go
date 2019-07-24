@@ -37,7 +37,7 @@ func generateSQL(con *sql.DB) error {
 			lib.FatalOnError(rs.Scan(&requesturi, &verb))
 			sql += "(request_uri = '" + requesturi + "' and verb = '" + verb + "') or "
 			args++
-			if args == 500 {
+			if args == 1000 {
 				sql = sql[:len(sql)-4] + ");"
 				fmt.Printf("%s\n", sql)
 				sql = sqlRoot
