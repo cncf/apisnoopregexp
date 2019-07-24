@@ -14,7 +14,7 @@ import (
 
 func rmatchSQL(con *sql.DB) error {
 	// Set to true to have verbose output
-	dbg := false
+	dbg := os.Getenv("DBG") != ""
 	// Distinct request URIs
 	rows := lib.QuerySQLWithErr(
 		con,
@@ -46,7 +46,7 @@ func rmatchSQL(con *sql.DB) error {
 		rmap[rex] = re
 	}
 	lib.FatalOnError(rows.Err())
-	fmt.Printf("RegExps: %d\n", len(res))
+	fmt.Printf("Regexps: %d\n", len(res))
 
 	// Now find all matches
 	thrN := runtime.NumCPU()
@@ -81,17 +81,19 @@ func rmatchSQL(con *sql.DB) error {
 	}
 
 	// Matching analysis
-	hist := make(map[int]int)
-	for _, m := range matches {
-		l := len(m)
-		v, ok := hist[l]
-		if !ok {
-			hist[l] = 0
-		} else {
-			hist[l] = v + 1
+	if os.Getenv("ANALYSIS") != "" {
+		hist := make(map[int]int)
+		for _, m := range matches {
+			l := len(m)
+			v, ok := hist[l]
+			if !ok {
+				hist[l] = 0
+			} else {
+				hist[l] = v + 1
+			}
 		}
+		fmt.Printf("Matches data (ideally there should be no misses (0:0) and no multiple matches (>=2:0), only (1:N):\n%+v\n", hist)
 	}
-	fmt.Printf("Matches data: %+v\n", hist)
 
 	// Now update uris
 	nThreads = 0

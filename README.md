@@ -13,7 +13,11 @@
 # Update OpID via Regexp
 
 Note that all mass update script only update records with `null` on `opid`, so they can be called iteratively.
+
 - Run: `make`, `time sudo -u postgres ./rmatch`. That will update `op_id` column on `audit_events` table.
+- You can use CONN='....' to specify your own custom connect string, see example connect strings in `lib.go`.
+- You can use `ANALYSIS=1` to get information about how many records had 0, 1, 2, ... matches.
+- You can use `DBG=1` to get a lot more verbose output.
 
 
 # Restore into the original database
