@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	lib "github.com/cncf/apisnoopregexp"
+	lib "github.com/ii/apisnoopregexp"
 	_ "github.com/lib/pq" // As suggested by lib/pq driver
 )
 
