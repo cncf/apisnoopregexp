@@ -12,7 +12,7 @@ import (
 func generateSQL(con *sql.DB) error {
 	rows := lib.QuerySQLWithErr(
 		con,
-		"select distinct op_id from audit_events where op_id is not null order by op_id",
+		"select distinct operation_id from raw_audit_events where operation_id is not null order by operation_id",
 	)
 	defer func() { lib.FatalOnError(rows.Close()) }()
 	opid := ""
@@ -25,7 +25,7 @@ func generateSQL(con *sql.DB) error {
 	for _, opid := range opids {
 		rs := lib.QuerySQLWithErr(
 			con,
-			"select distinct request_uri, verb from audit_events where op_id = $1",
+			"select distinct request_uri, verb from raw_audit_events where operation_id = $1",
 			opid,
 		)
 		requesturi := ""
