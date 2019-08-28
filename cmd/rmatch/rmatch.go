@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"sync"
 
-	lib "github.com/cncf/apisnoopregexp"
+	lib "github.com/ii/apisnoopregexp"
 	_ "github.com/lib/pq" // As suggested by lib/pq driver
 )
 
@@ -18,7 +18,7 @@ func rmatchSQL(con *sql.DB) error {
 	// Distinct request URIs
 	rows := lib.QuerySQLWithErr(
 		con,
-		"select distinct request_uri from audit_events where op_id is null",
+		"select distinct request_uri from raw_audit_event where operation_id is null",
 	)
 	defer func() { lib.FatalOnError(rows.Close()) }()
 	uri := ""
@@ -33,7 +33,7 @@ func rmatchSQL(con *sql.DB) error {
 	// Distinct regexps
 	rows = lib.QuerySQLWithErr(
 		con,
-		"select distinct regexp from api_operations",
+		"select distinct regex from api_operation order by regex asc",
 	)
 	defer func() { lib.FatalOnError(rows.Close()) }()
 	re := ""
@@ -112,7 +112,7 @@ func rmatchSQL(con *sql.DB) error {
 			}
 			rs := lib.QuerySQLWithErr(
 				con,
-				"select distinct verb from audit_events where op_id is null and request_uri = $1",
+				"select distinct event_verb from raw_audit_event where operation_id is null and request_uri = $1",
 				uri,
 			)
 			verb := ""
@@ -156,7 +156,7 @@ func rmatchSQL(con *sql.DB) error {
 					// There should be at most one
 					rs2 := lib.QuerySQLWithErr(
 						con,
-						"select id from api_operations where method = $1 and regexp = $2",
+						"select operation_id from api_operation_material where http_method = $1 and regex = $2",
 						method,
 						sma,
 					)
@@ -192,10 +192,13 @@ func rmatchSQL(con *sql.DB) error {
 					if la > 1 {
 						fmt.Printf("WARNING: Multiple IDs found: uri:%s verb:%s method:%s regexps:%+v -> ids:%+v, picking longest regexp: (%d/%s):%s\n", uri, verb, method, ms, aids, lre, aid, pre)
 					}
+					// which ms is longer?
+					// what is it's index
+					// use aids[longer_ms_index]
 					rt := lib.ExecSQLWithErr(
 						con,
-						"update audit_events set op_id = $1 where request_uri = $2 and verb = $3",
-						aid,
+						"update raw_audit_event set operation_id = $1 where request_uri = $2 and event_verb = $3",
+						aids[0],
 						uri,
 						verb,
 					)

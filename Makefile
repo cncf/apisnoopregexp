@@ -1,6 +1,6 @@
 GO_LIB_FILES=lib.go
 GO_BIN_FILES=cmd/gensql/gensql.go cmd/rmatch/rmatch.go
-GO_BIN_CMDS=github.com/cncf/apisnoopregexp/cmd/gensql github.com/cncf/apisnoopregexp/cmd/rmatch
+GO_BIN_CMDS=github.com/ii/apisnoopregexp/cmd/gensql github.com/ii/apisnoopregexp/cmd/rmatch
 GO_ENV=CGO_ENABLED=0
 GO_BUILD=go build -ldflags '-s -w'
 GO_INSTALL=go install -ldflags '-s'
